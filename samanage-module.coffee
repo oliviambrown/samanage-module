@@ -29,18 +29,94 @@ refreshFrequency: 1000 * 60 #every 60 seconds
 #from ubersicht: 
 # render gets called after the shell command has executed. The command's output
 # is passed in as a string. Whatever it returns will get rendered as HTML.
-render: (output) -> 
-    """  """
+render: (_) -> 
+    """ <div class='to-do-wrap'>Loading...</div>  """
 
 #style method = essential to ubersicht - css
 style: """
+	bottom: #{bottom}
+	top: #{top}
+	left: #{left}
+	right: #{right}
+	width: #{width}
+	color: #fff
+	background: rgba(#525252,0.9)
+	font-family: Myriad Set Pro, Helvetica Neue
+	font-size: 10pt
+	border-radius: 3px
 
+	.lists,.tasks
+		margin: 0
+		padding: 0
+
+	.list,.task
+			list-style: none
+
+	.list:first-child .list-info
+		border-top-left-radius: 3px
+		border-top-right-radius: 3px
+
+	.list-info
+		background: rgba(0,0,0,0.2)
+		position: relative
+		font-weight: bold
+
+	.list-name
+		padding: 5px 10px
+		margin: 0 40px 0 0
+		overflow: hidden
+		text-overflow: ellipsis
+		position: relative
+		white-space: nowrap
+		opacity: 0.85
+
+	.list-info.Open,.list-info.New
+		background: #E82A2A
+
+	.list-info.Pending
+		background: #59BBE0
+
+	.tasks-length
+		position: absolute
+		top: 0px
+		right: 5px
+		opacity: 0.85
+		padding: 5px 5px
+
+	.task
+		margin: 0 10px
+		padding: 5px 0 5px 20px
+		white-space: nowrap
+		overflow: hidden
+		text-overflow: ellipsis
+		position: relative
+		opacity: 0.85
+		a
+			color: #fff
+			text-decoration: none
+			&:hover
+				text-decoration: underline
+
+	.task::after
+		content: ""
+		position: absolute
+		width: 10px
+		height: 10px
+		background: rgba(0,0,0,0.3)
+		-webkit-border-radius: 20px
+		left: 0
+		top: 8px
+
+	.error
+		padding: 5px
+		background: rgba(0,0,0,0.3)
 """
 
 
 #boolean variable - shows the names for each category
 showListNames: true
 
+showLists: []
 #shows certain amount of tasks
 taskNumbers:
     'new': 10
@@ -60,12 +136,12 @@ taskBase: (tasks) ->
 #list object to hold the different states, new and resolved for placeholders
     manager = [
         {
-            state: 'New',  
-            status: 'new'
+            title: 'New',  
+            state: 'new'
         },
         {
-            state:'Resolved',
-            status: 'resolved'
+            title:'Resolved',
+            state: 'resolved'
         }]
     
     #taskNumbers = this.taskNumbers
@@ -78,11 +154,11 @@ manager.forEach (m) ->
     counter = 0
     task.forEach (t) ->
         #if 
-        if(!taskNumbers[m.status] || n < taskNumbers[m.status]) && m.status == t.status
+        if(!taskNumbers[m.state] || n < taskNumbers[m.state]) && m.state == t.state
             taskArr.push
                 title: t.name
                 id: t.id
-            counter++
+            counter++;
     base[m.title] = taskArr
     
     @base = base
@@ -90,11 +166,11 @@ manager.forEach (m) ->
 _render: () ->
     template = '<ul class = "lists">'
     listNameHtml = ''
-    tree = if @showListNames.length then @showListNames else Object.keys(@tree)
+    base = if @showLists.length then @showLists else Object.keys(@base)
     
-    tree.forEach(listName) =->
-        tasks = @tree[listName]
-        n = tasks.length
+    base.forEach(listName) =>
+        task = @base[listName]
+        n = task.length
     
     if n
         if @showListNames
@@ -103,7 +179,24 @@ _render: () ->
             '<div class ="task-length">' + n + '</div>' + '</div>'
         
         tasksList = ''
-        tasksforEach(task) =>
-            tasksList += '<li class="task"><a href=https://'+@subdomain+'.samananage.com/'+task.id+'">'+task.title+'</a></li>' 
+        base.forEach(task) =>
+            tasksList += '<li class="task"><a href=https://'+@subdomain+'.samananage.com/incidents/'+task.id+'">'+task.title+'</a></li>'
+            
+        str += '<li class="list">' + listNameHtml + '<ul class="tasks>' + tasksList + '</ul>' + '</li>'
+        str += '</ul>'
+        
+        @content.html str
+        
+  update: (output, domEl) ->
+
+  if !@content
+    @content = $(domEl).find('.to-do-wrap')
+  # @something = this.something
+  
+  @tasks = @fetchTask output
+  @base = @taskBase @tasks
+  @_render ''
+  .bind(this)          
+        
         
 
