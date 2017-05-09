@@ -104,6 +104,6 @@ _render: () ->
         
         tasksList = ''
         tasksforEach(task) =>
-            tasksList += '<li class="task"><a href=https://'+@subdomain+'.samanage.com/' 
+            tasksList += '<li class="task"><a href=https://'+@subdomain+'.samananage.com/'+task.id+'">'+task.title+'</a></li>' 
         
 
